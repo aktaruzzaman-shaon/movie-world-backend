@@ -11,7 +11,8 @@ app.use(express.json())
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = "mongodb+srv://movie-world:M4bmyeUbwFC05qJz@movie-world-1.02rq3mc.mongodb.net/?retryWrites=true&w=majority";
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version-----------------------
+
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
@@ -22,11 +23,31 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
-        // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
+        // mongodb connection-----------------
+        client.connect();
+
+        // db collections---------------------
+        const videoData = client.db('movie').collection('videoData');
+
+        // video url post request ------------
+        app.post('/videoUrl', async (req, res) => {
+            const url = req.body;
+            const result = await videoData.insertOne(url)
+            res.send(result)
+        })
+
+        //all movie reques-------------------
+        app.get('/allmovie', async (req, res) => {
+            const cursor =  videoData.find({})
+            const result = await cursor.toArray();
+            console.log(result)
+            res.send(result);
+        })
+
+        
+
+
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
@@ -34,10 +55,14 @@ async function run() {
 }
 run().catch(console.dir);
 
-app.get('*',(req,res)=>{
+app.get('/', (req, res) => {
+    res.send("running movie")
+})
+
+app.get('*', (req, res) => {
     res.send("no router found , 404")
 })
-app.listen(PORT,()=>{
+app.listen(PORT, () => {
     console.log('Server is running')
 })
 
