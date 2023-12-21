@@ -8,7 +8,7 @@ app.use(express.json())
 
 // mongodb integration---------------------------
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = "mongodb+srv://movie-world:M4bmyeUbwFC05qJz@movie-world-1.02rq3mc.mongodb.net/?retryWrites=true&w=majority";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version-----------------------
@@ -39,13 +39,31 @@ async function run() {
 
         //all movie reques-------------------
         app.get('/allmovie', async (req, res) => {
-            const cursor =  videoData.find({})
+            const cursor = videoData.find({})
             const result = await cursor.toArray();
             console.log(result)
             res.send(result);
         })
 
-        
+
+        //upload ratings--------------------------
+        app.put('/rating', async (req, res) => {
+            const videoId = req.body.objectId;
+            const ratingData = req.body.ratingNumber;
+            console.log(ratingData, videoId)
+            const o_id = new ObjectId(videoId);
+            const filter = ({ _id: o_id })
+            const uploadRatingData = { rating: ratingData }
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: uploadRatingData
+            }
+            const result = videoData.updateOne(filter, updateDoc, options)
+            res.send(result);
+        })
+
+
+
 
 
     } finally {
